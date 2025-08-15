@@ -3,48 +3,30 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Test WebAR mínimo</title>
+<title>AR.js Hiro Test</title>
 
-<!-- A-Frame + AR.js -->
+<!-- A-Frame + AR.js (build estándar marker-based) -->
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar-nft.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
 
 <style>html,body{margin:0;overflow:hidden}</style>
 </head>
 <body>
-  <!-- Canvas-textura (ya con contenido desde el inicio) -->
-  <canvas id="tex" width="1024" height="512" style="display:none;"></canvas>
-
   <a-scene
     embedded
     vr-mode-ui="enabled:false"
-    renderer="antialias:true; alpha:true; precision:mediump"
-    arjs="sourceType:webcam; detectionMode:mono; matrixCodeType:3x3; sourceWidth:1280; sourceHeight:720;"
+    renderer="antialias:true; alpha:true"
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
   >
-    <!-- Marcador HIRO -->
-    <a-marker type="pattern" url="https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/data/hiro.patt">
-      <!-- Panel con la textura del canvas -->
-      <a-plane position="0 0 0" rotation="-90 0 0" width="1.6" height="0.8"
-               material="src:#tex; transparent:true"></a-plane>
-
-      <!-- Cubo de prueba: si ves el cubo, el marcador está siendo detectado -->
-      <a-box position="0 0.05 0" rotation="-90 0 0" width="0.3" height="0.1" depth="0.3" color="#FF5A5F"></a-box>
+    <!-- Usa el preset 'hiro' (no URL externa) -->
+    <a-marker preset="hiro">
+      <a-box position="0 0.5 0" rotation="0 45 0" color="#FF5A5F"></a-box>
+      <a-sphere position="0 1.2 0" radius="0.15" color="#4CAF50"></a-sphere>
+      <a-text value="HIRO OK" position="-0.5 0 0.1" rotation="-90 0 0" color="#fff"></a-text>
     </a-marker>
 
     <a-entity camera></a-entity>
   </a-scene>
-
-<script>
-  // Dibuja texto GRANDE en el canvas para que siempre veas algo
-  const canvas = document.getElementById('tex');
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,1024,512);
-  ctx.fillStyle = '#111'; ctx.font = 'bold 64px system-ui, sans-serif';
-  ctx.fillText('Hola WebAR 👋', 40, 120);
-  ctx.fillStyle = '#0b5'; ctx.font = 'bold 96px system-ui, sans-serif';
-  ctx.fillText('KPI: 157', 40, 260);
-  ctx.fillStyle = '#666'; ctx.font = '28px system-ui, sans-serif';
-  ctx.fillText('Si ves esto + el cubo rojo, todo OK', 40, 340);
-</script>
 </body>
 </html>
+
