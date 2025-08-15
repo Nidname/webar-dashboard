@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>WebAR + Google Charts (mínimo)</title>
+
+<!-- A-Frame + AR.js -->
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar-nft.js"></script>
+
+<!-- Google Charts -->
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+
+<style>
+  html,body {margin:0; overflow:hidden}
+  #gc {position:fixed; left:-9999px; top:-9999px; width:560px; height:320px;} /* contenedor oculto */
+</style>
+</head>
+<body>
+  <!-- Canvas que será la textura del panel -->
+  <canvas id="tex" width="1024" height="512" style="display:none;"></canvas>
+  <!-- Contenedor oculto para que Google Charts dibuje -->
+  <div id="gc"></div>
+
+  <a-scene embedded vr-mode-ui="enabled:false"
+           renderer="antialias:true; alpha:true"
+           arjs="sourceType:webcam; detectionMode:mono;">
+    <a-marker type="pattern"
+      url="https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/data/hiro.patt">
+      <!-- Panel con la textura del canvas -->
+      <a-plane position="0 0 0" rotation="-90 0 0" width="1.6" height="0.8"
+               material="src:#tex; transparent:true"></a-plane>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
+
+<script>
+  // --- Config mínima ---
+  const CANVAS_W = 1024, CANVAS_H = 512;
+  const chartArea = { x: 420, y: 80, w: 560, h: 320 };
+
+  const canvas = document.getElementById('tex');
+  const ctx = canvas.getContext('2d');
+
+  function drawBase(kpi=123) {
+    // fondo
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
+
+    // título
+    ctx.fillStyle = '#111';
+    ctx.font = 'bold 42px system-ui, sans-serif';
+    ctx.fillText('Dashboard AR', 32, 56);
+
+    // KPI grande
+    ctx.fillStyle = '#0b5';
+    ctx.font = 'bold 96px system-ui, sans-serif';
+    ctx.fillText(String(kpi), 40, 180);
+
+    // pie
+    ctx.fillStyle = '#666';
+    ctx.font = '24px system-ui, sans-serif';
+    ctx.fillText('Ejemplo mínimo • ' + new Date().toLocaleTimeString(), 32, CANVAS_H-20);
+  }
+
+  // --- Google Charts: línea simple y la copiamos al canvas ---
+  google.charts.load('current', {packages:['corechart']});
+  google.charts.setOnLoadCallback(() => {
+    drawBase(157); // valor fijo demo
+
+    const container = document.getElementById('gc');
+    container.style.width = chartArea.w + 'px';
+    container.style.height = chartArea.h + 'px';
+
+    const data = google.visualization.arrayToDataTable([
+      ['Hora','Ventas'],
+      ['09:00',  80],
+      ['10:00', 120],
+      ['11:00',  90],
+      ['12:00', 150],
+      ['13:00', 130],
+      ['14:00', 170]
+    ]);
+
+    const options = {
+      width: chartArea.w, height: chartArea.h,
+      legend: {position:'none'},
+      chartArea: {left:40, top:10, width:'85%', height:'80%'},
+      vAxis: {viewWindowMode:'explicit', viewWindow:{min:0}}, lineWidth:2
+    };
+
+    const chart = new google.visualization.LineChart(container);
+    google.visualization.events.addListener(chart, 'ready', () => {
+      const svg = container.getElementsByTagName('svg')[0];
+      const xml = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([xml], {type:'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, chartArea.x, chartArea.y, chartArea.w, chartArea.h);
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    });
+
+    chart.draw(data, options);
+  });
+</script>
+</body>
+</html>
