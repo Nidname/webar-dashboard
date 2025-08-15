@@ -3,49 +3,83 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>AR.js Hiro — Test reforzado</title>
+<title>AR.js Hiro — Test con enlaces robustos</title>
 
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js?v=20250814"></script>
-<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js?v=20250814"></script>
+<!-- A-Frame + AR.js -->
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js?v=1"></script>
 
 <style>
   html,body{margin:0;overflow:hidden;background:#000}
-  .hud{position:fixed;left:0;top:0;right:0;display:flex;gap:8px;align-items:center;
-    padding:8px;background:rgba(0,0,0,.35);color:#fff;font:14px system-ui,sans-serif;z-index:9;pointer-events:none}
-  .btn{pointer-events:auto;background:#1f6feb;border:0;color:#fff;border-radius:8px;padding:6px 10px}
+  .hud{
+    position:fixed;left:0;top:0;right:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    padding:8px;background:rgba(0,0,0,.35);color:#fff;font:14px/1.2 system-ui,sans-serif;z-index:9
+  }
+  .btn{background:#1f6feb;border:0;color:#fff;border-radius:8px;padding:6px 10px}
+  .btn.alt{background:#2ea043}
+  .btn.warn{background:#9e6c00}
   .status{padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.12)}
 </style>
 </head>
 <body>
   <div class="hud">
     <span class="status" id="status">Cargando…</span>
-    <button class="btn" onclick="window.open('https://commons.wikimedia.org/wiki/File:Hiro_marker_ARjs.png','_blank')">Abrir marcador HIRO</button>
-    <button class="btn" onclick="window.open('https://jeromeetienne.github.io/AR.js/three.js/examples/marker-training/examples/generator.html','_blank')">Generar marcador</button>
+    <button class="btn" onclick="window.open('https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/three.js/data/images/HIRO.jpg','_blank')">Abrir HIRO (CDN 1)</button>
+    <button class="btn alt" onclick="window.open('https://raw.githubusercontent.com/AR-js-org/AR.js/3.4.5/three.js/data/images/HIRO.jpg','_blank')">Abrir HIRO (Raw 2)</button>
+    <button class="btn warn" onclick="openLocalMarker()">Marcador local (fallback)</button>
+    <small class="status">Usa otro dispositivo para mostrar el marcador a pantalla completa.</small>
   </div>
 
-  <a-scene embedded vr-mode-ui="enabled:false"
+  <a-scene
+    embedded
+    vr-mode-ui="enabled:false"
     renderer="antialias:true; alpha:true; precision:mediump"
-    arjs="sourceType: webcam; facingMode: environment; detectionMode: mono; trackingMethod: best; debugUIEnabled: true; sourceWidth:1280; sourceHeight:720; displayWidth:1280; displayHeight:720;">
+    arjs="sourceType: webcam; facingMode: environment; detectionMode: mono; trackingMethod: best; debugUIEnabled: true; sourceWidth:1280; sourceHeight:720; displayWidth:1280; displayHeight:720;"
+  >
+    <!-- Marcador preset 'hiro' -->
     <a-marker preset="hiro" emitevents="true" id="marker">
       <a-box position="0 0.5 0" rotation="0 45 0" color="#FF5A5F"></a-box>
       <a-sphere position="0 1.2 0" radius="0.15" color="#4CAF50"></a-sphere>
       <a-text value="HIRO OK" position="-0.5 0 0.1" rotation="-90 0 0" color="#FFFFFF"></a-text>
-      <a-plane position="0 0 0" rotation="-90 0 0" width="1.6" height="1.6" color="#222" opacity="0.2"></a-plane>
     </a-marker>
+
     <a-entity camera></a-entity>
   </a-scene>
 
 <script>
+  // Estado visible
   const $status = document.getElementById('status');
-  const marker = document.getElementById('marker');
-
   function setStatus(t){ $status.textContent = t; }
+
   document.addEventListener('DOMContentLoaded', () => setStatus('Cámara solicitada…'));
   const scene = document.querySelector('a-scene');
   if (scene.hasLoaded) setStatus('Cámara lista. Apunta al marcador HIRO.');
   else scene.addEventListener('loaded', () => setStatus('Cámara lista. Apunta al marcador HIRO.'));
+
+  const marker = document.getElementById('marker');
   marker.addEventListener('markerFound', () => setStatus('✅ Marcador detectado (HIRO)'));
   marker.addEventListener('markerLost',  () => setStatus('🔎 Buscando marcador HIRO…'));
+
+  // Fallback local: página simple que dibuja un "HIRO" estilizado en blanco/negro
+  // (No es el patrón oficial .patt, pero suele funcionar como referencia visual para probar detección).
+  function openLocalMarker() {
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <!DOCTYPE html><html><head><meta charset="utf-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <title>Marcador HIRO (local)</title>
+      <style>
+        html,body{margin:0;height:100%;background:#fff;display:flex;align-items:center;justify-content:center}
+        .frame{width:min(90vmin,800px);height:min(90vmin,800px);background:#fff;display:grid;place-items:center;border:16px solid #000;}
+        .inner{width:80%;height:80%;background:#000;display:grid;place-items:center}
+        .glyph{width:60%;height:60%;background:#fff;clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);}
+        /* Nota: esto NO es el patrón exacto oficial, pero sirve como marcador de alto contraste para prueba visual */
+      </style></head>
+      <body><div class="frame"><div class="inner"><div class="glyph"></div></div></div></body></html>
+    `);
+    win.document.close();
+  }
 </script>
 </body>
 </html>
+
