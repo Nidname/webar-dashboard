@@ -5,68 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>AR.js Hiro — Test reforzado</title>
 
-<!-- A-Frame + AR.js (forzar cache-busting con ?v=) -->
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js?v=20250814"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js?v=20250814"></script>
 
 <style>
   html,body{margin:0;overflow:hidden;background:#000}
-  .hud{
-    position:fixed;left:0;top:0;right:0;display:flex;gap:8px;align-items:center;
-    padding:8px;background:rgba(0,0,0,.35);color:#fff;font:14px/1.2 system-ui,sans-serif;
-    z-index:9; pointer-events:none;
-  }
-  .hud .btn{pointer-events:auto;background:#1f6feb;border:0;color:#fff;border-radius:8px;padding:6px 10px}
+  .hud{position:fixed;left:0;top:0;right:0;display:flex;gap:8px;align-items:center;
+    padding:8px;background:rgba(0,0,0,.35);color:#fff;font:14px system-ui,sans-serif;z-index:9;pointer-events:none}
+  .btn{pointer-events:auto;background:#1f6feb;border:0;color:#fff;border-radius:8px;padding:6px 10px}
   .status{padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.12)}
 </style>
 </head>
 <body>
   <div class="hud">
     <span class="status" id="status">Cargando…</span>
-    <button class="btn" onclick="window.open('https://raw.githubusercontent.com/AR-js-org/AR.js/master/three.js/data/images/HIRO.jpg','_blank')">Abrir marcador HIRO</button>
-    <span class="status" id="device"></span>
+    <button class="btn" onclick="window.open('https://commons.wikimedia.org/wiki/File:Hiro_marker_ARjs.png','_blank')">Abrir marcador HIRO</button>
+    <button class="btn" onclick="window.open('https://jeromeetienne.github.io/AR.js/three.js/examples/marker-training/examples/generator.html','_blank')">Generar marcador</button>
   </div>
 
-  <a-scene
-    embedded
-    vr-mode-ui="enabled:false"
+  <a-scene embedded vr-mode-ui="enabled:false"
     renderer="antialias:true; alpha:true; precision:mediump"
-    arjs="sourceType: webcam; facingMode: environment; detectionMode: mono; trackingMethod: best; debugUIEnabled: true; sourceWidth:1280; sourceHeight:720; displayWidth:1280; displayHeight:720;"
-  >
-    <!-- Marcador preset 'hiro' -->
+    arjs="sourceType: webcam; facingMode: environment; detectionMode: mono; trackingMethod: best; debugUIEnabled: true; sourceWidth:1280; sourceHeight:720; displayWidth:1280; displayHeight:720;">
     <a-marker preset="hiro" emitevents="true" id="marker">
-      <!-- Geometrías visibles -->
       <a-box position="0 0.5 0" rotation="0 45 0" color="#FF5A5F"></a-box>
       <a-sphere position="0 1.2 0" radius="0.15" color="#4CAF50"></a-sphere>
       <a-text value="HIRO OK" position="-0.5 0 0.1" rotation="-90 0 0" color="#FFFFFF"></a-text>
-      <!-- Marco base para referencia -->
       <a-plane position="0 0 0" rotation="-90 0 0" width="1.6" height="1.6" color="#222" opacity="0.2"></a-plane>
     </a-marker>
-
     <a-entity camera></a-entity>
   </a-scene>
 
 <script>
   const $status = document.getElementById('status');
-  const $device = document.getElementById('device');
-  $device.textContent = navigator.userAgent;
-
-  // Estados útiles
-  function setStatus(t){ $status.textContent = t; }
-
-  // A-Frame listo
-  document.addEventListener('DOMContentLoaded', () => setStatus('Cámara solicitada…'));
-
-  // AR.js UI de depuración ya está activada con debugUIEnabled:true
-  // Escucha eventos del marcador
   const marker = document.getElementById('marker');
-  marker.addEventListener('markerFound', () => setStatus('✅ Marcador detectado (HIRO)'));
-  marker.addEventListener('markerLost',  () => setStatus('🔎 Buscando marcador HIRO…'));
 
-  // Cuando la escena esté lista, actualiza estado
+  function setStatus(t){ $status.textContent = t; }
+  document.addEventListener('DOMContentLoaded', () => setStatus('Cámara solicitada…'));
   const scene = document.querySelector('a-scene');
   if (scene.hasLoaded) setStatus('Cámara lista. Apunta al marcador HIRO.');
   else scene.addEventListener('loaded', () => setStatus('Cámara lista. Apunta al marcador HIRO.'));
+  marker.addEventListener('markerFound', () => setStatus('✅ Marcador detectado (HIRO)'));
+  marker.addEventListener('markerLost',  () => setStatus('🔎 Buscando marcador HIRO…'));
 </script>
 </body>
 </html>
